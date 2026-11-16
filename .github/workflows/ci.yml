@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  testes:
+    name: Build e testes (Python 3.12 + PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: altaris
+          POSTGRES_PASSWORD: altaris
+          POSTGRES_DB: altaris
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SECRET_KEY: chave-somente-para-ci
+      DEBUG: "0"
+      SECURE_SSL_REDIRECT: "0"
+      DATABASE_URL: postgres://altaris:altaris@localhost:5432/altaris
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar dependências
+        run: pip install -r requirements-dev.txt
+      - name: Verificar migrações pendentes
+        run: python manage.py makemigrations --check --dry-run
+      - name: Verificação de segurança do Django
+        run: python manage.py check --deploy --fail-level ERROR
+      - name: Coletar estáticos (build)
+        run: python manage.py collectstatic --noinput
+      - name: Testes unitários e de integração com cobertura
+        run: pytest --cov=escala --cov-report=term-missing --cov-report=xml --cov-fail-under=85
+      - name: Publicar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage.xml
