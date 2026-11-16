@@ -1,0 +1,43 @@
+# Monitoramento de disponibilidade (EP4): verifica o ALTARIS em produção a cada 30 minutos.
+# Se /saude/ não responder "ok", o job falha: o GitHub marca o run como DOWN (vermelho) e
+# envia e-mail de falha ao dono do repositório. Cada run registra status, banco e latência.
+name: Monitor de disponibilidade
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  saude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      URL: https://altaris-2vu6.onrender.com
+    steps:
+      - name: Verificar /saude/ (com tolerância ao "acordar" do plano gratuito)
+        run: |
+          for tentativa in 1 2 3 4; do
+            inicio=$(date +%s%3N)
+            codigo=$(curl -s -o resposta.json -w "%{http_code}" --max-time 70 "$URL/saude/" || echo 000)
+            tempo=$(( $(date +%s%3N) - inicio ))
+            echo "Tentativa $tentativa: HTTP $codigo em ${tempo} ms"
+            if [ "$codigo" = "200" ] && grep -q '"status": "ok"' resposta.json; then
+              echo "### ✅ ALTARIS UP" >> "$GITHUB_STEP_SUMMARY"
+              echo "- URL: $URL" >> "$GITHUB_STEP_SUMMARY"
+              echo "- Resposta: \`$(cat resposta.json)\`" >> "$GITHUB_STEP_SUMMARY"
+              echo "- Tempo total: ${tempo} ms (tentativa $tentativa)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "### ❌ ALTARIS DOWN – último HTTP $codigo" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Verificar página de login (interface no ar)
+        run: |
+          curl -sf --max-time 60 "$URL/entrar/" | grep -q "ALTARIS"
+          echo "- Página de login respondendo ✅" >> "$GITHUB_STEP_SUMMARY"
