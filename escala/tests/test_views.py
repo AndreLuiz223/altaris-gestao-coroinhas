@@ -143,3 +143,22 @@ def test_recursos_de_acessibilidade_presentes_inclusive_na_escala_publica(client
         assert 'aria-pressed="false"' in html
         assert 'href="#conteudo"' in html and 'id="conteudo"' in html
         assert "js/acessibilidade.js" in html
+
+
+def test_montagem_mostra_guia_progresso_e_proxima_funcao(cliente_logado, celebracao, servidores):
+    html = cliente_logado.get(reverse("montar_escala", args=[celebracao.pk])).content.decode()
+    assert "Como montar" in html and "0 de 8" in html and "próxima" in html
+
+
+def test_reaproveitar_escala_anterior_pela_interface(cliente_logado, celebracao, servidores):
+    from datetime import timedelta
+    from escala import services
+    from escala.models import Celebracao
+    origem = Celebracao.objects.create(comunidade=celebracao.comunidade, titulo="Missa dominical",
+                                       data_hora_inicio=celebracao.data_hora_inicio - timedelta(days=7))
+    services.atribuir(origem, Funcao.CRUZ, servidores["ana"])
+    url = reverse("montar_escala", args=[celebracao.pk])
+    assert "Reaproveitar escala anterior" in cliente_logado.get(url).content.decode()
+    resp = cliente_logado.post(reverse("copiar_escala", args=[celebracao.pk]), {"origem": origem.pk}, follow=True)
+    assert "1 função(ões) copiada(s)" in resp.content.decode()
+    assert celebracao.atribuicoes.get(funcao=Funcao.CRUZ).servidor == servidores["ana"]

@@ -31,9 +31,16 @@ def montar_escala(request, pk):
     if funcao in Funcao.values:
         sugestoes = services.sugerir_servidores(celebracao, funcao)
         funcao_label = Funcao(funcao).label
+    linhas = services.linhas_da_escala(celebracao)
+    preenchidas = sum(1 for _, _, a in linhas if a)
+    proxima = next((valor for valor, _, a in linhas if not a), None)
     return render(request, "escala/montar.html", {
         "celebracao": celebracao,
-        "linhas": services.linhas_da_escala(celebracao),
+        "linhas": linhas,
+        "preenchidas": preenchidas,
+        "total_funcoes": len(linhas),
+        "proxima": proxima,
+        "anterior": services.escala_anterior(celebracao) if preenchidas < len(linhas) else None,
         "avisos": services.avisos_da_escala(celebracao),
         "funcao": funcao if funcao_label else None,
         "funcao_label": funcao_label,
@@ -57,6 +64,24 @@ def atribuir(request, pk):
         if funcao in Funcao.values:
             url += "?" + urlencode({"funcao": funcao})
         return redirect(url)
+    return redirect("montar_escala", pk=pk)
+
+
+@login_required
+@require_POST
+def copiar(request, pk):
+    """Ajuste da validação 1 – reaproveitar a escala anterior da mesma comunidade."""
+    celebracao = get_object_or_404(Celebracao, pk=pk)
+    origem = get_object_or_404(Celebracao, pk=request.POST.get("origem"))
+    try:
+        copiadas, avisos = services.copiar_escala(celebracao, origem, request.user)
+    except services.RegraEscalaError as erro:
+        messages.error(request, str(erro))
+        return redirect("montar_escala", pk=pk)
+    messages.success(request, f"{copiadas} função(ões) copiada(s) da escala de "
+                              f"{origem.data_hora_inicio:%d/%m}. Confira e ajuste se precisar.")
+    for aviso in avisos:
+        messages.warning(request, aviso)
     return redirect("montar_escala", pk=pk)
 
 

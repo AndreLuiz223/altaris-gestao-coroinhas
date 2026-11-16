@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.painel, name="painel"),
     path("escalas/<int:pk>/", views.montar_escala, name="montar_escala"),
     path("escalas/<int:pk>/atribuir/", views.atribuir, name="atribuir"),
+    path("escalas/<int:pk>/copiar/", views.copiar, name="copiar_escala"),
     path("escalas/<int:pk>/remover/", views.remover, name="remover"),
     path("escalas/<int:pk>/publicar/", views.publicar, name="publicar"),
     path("escalas/<int:pk>/resultado/", views.resultado_escala, name="resultado_escala"),
