@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="h5 my-2">Próximas celebrações</h2>
+{% for c in celebracoes %}
+  {% with p=c.atribuicoes.all|length t=c.total_funcoes %}
+  <article class="cartao">
+    <div class="quando">{{ c.data_hora_inicio|date:"D d/m • H\hi" }}</div>
+    <div class="meta">{{ c.comunidade }} • {{ c.get_tipo_display }}</div>
+          <div class="status">⏱ {{ p }} de {{ t }} funções preenchidas</div>
+      <progress class="barra-prog" value="{{ p }}" max="{{ t }}" aria-label="Funções preenchidas">{{ p }} de {{ t }}</progress>
+  </article>
+  {% endwith %}
+{% empty %}
+  <div class="cartao">Nenhuma celebração cadastrada. Cadastre as celebrações no painel de gestão.</div>
+{% endfor %}
+{% endblock %}

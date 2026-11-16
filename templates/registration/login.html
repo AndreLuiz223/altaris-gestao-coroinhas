@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Entrar – ALTARIS{% endblock %}
+{% block content %}
+<div class="cartao">
+  <h2 class="h4">Entrar na coordenação</h2>
+  {% if form.errors %}<div class="alerta alerta-erro" role="alert"><span class="ic" aria-hidden="true">✕</span><div>Usuário ou senha inválidos.</div></div>{% endif %}
+  <form method="post">{% csrf_token %}
+    <div class="mb-3"><label for="id_username">Usuário</label><input class="form-control" type="text" name="username" id="id_username" autocomplete="username" required autofocus></div>
+    <div class="mb-3"><label for="id_password">Senha</label><input class="form-control" type="password" name="password" id="id_password" autocomplete="current-password" required></div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn-alt btn-prim" type="submit">Entrar</button>
+  </form>
+</div>
+{% endblock %}

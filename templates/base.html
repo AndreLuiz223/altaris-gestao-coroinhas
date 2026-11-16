@@ -1,0 +1,35 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ALTARIS{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/altaris.css' %}">
+</head>
+<body>
+<header class="topo">
+  <div>{% block topo %}<h1>✝ ALTARIS</h1>{% if user.is_authenticated %}<div class="sub">Olá, {{ user.first_name|default:user.username }}</div>{% endif %}{% endblock %}</div>
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'logout' %}" class="m-0">{% csrf_token %}<button class="btn-topo" type="submit">Sair</button></form>
+  {% endif %}
+</header>
+<main class="conteudo">
+  {% for m in messages %}
+    <div class="alerta {% if m.tags == 'error' %}alerta-erro{% elif m.tags == 'success' %}alerta-ok{% elif m.tags == 'warning' %}alerta-aviso{% else %}alerta-info{% endif %}" role="alert">
+      <span class="ic" aria-hidden="true">{% if m.tags == 'error' %}✕{% elif m.tags == 'success' %}✔{% elif m.tags == 'warning' %}!{% else %}i{% endif %}</span>
+      <div><strong>{% if m.tags == 'error' %}Não foi possível concluir.{% elif m.tags == 'success' %}Pronto!{% else %}Aviso:{% endif %}</strong> {{ m }}</div>
+    </div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+{% if user.is_authenticated %}
+<nav class="menu" aria-label="Menu principal">
+  {% with u=request.resolver_match.url_name %}
+  <a href="{% url 'painel' %}" class="{% if u == 'painel' %}ativo{% endif %}"><span class="ic" aria-hidden="true">⌂</span>Início</a>
+  <a href="{% url 'servidores' %}" class="{% if u == 'servidores' or u == 'servidor_novo' or u == 'servidor_editar' %}ativo{% endif %}"><span class="ic" aria-hidden="true">☺</span>Servidores</a>
+  {% endwith %}
+</nav>
+{% endif %}
+</body>
+</html>
