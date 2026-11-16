@@ -100,3 +100,25 @@ def test_publicar_gera_token_aleatorio(celebracao):
     celebracao.refresh_from_db()
     assert celebracao.publicada and len(token) >= 24
     assert services.publicar(celebracao) == token  # republicar mantém o mesmo link
+
+
+def test_pagamentos_e_saldo(tunica, usuario):
+    # RF05 – valores decimais e saldo calculado
+    services.registrar_pagamento(tunica, "85.00", "dinheiro", "2026-11-01", usuario)
+    services.registrar_pagamento(tunica, "42.50", "pix", "2026-11-08", usuario)
+    assert tunica.total_pago == Decimal("127.50")
+    assert tunica.saldo == Decimal("47.50")
+    assert tunica.pagamentos.order_by("parcela").last().parcela == 2
+
+
+def test_pagamento_acima_do_saldo_e_bloqueado(tunica):
+    services.registrar_pagamento(tunica, "175.00", "pix", "2026-11-01")
+    with pytest.raises(services.RegraEscalaError, match="ultrapassa o saldo"):
+        services.registrar_pagamento(tunica, "0.01", "pix", "2026-11-02")
+
+
+def test_resumo_caixa_confere_centavo_a_centavo(tunica):
+    services.registrar_pagamento(tunica, "100.00", "dinheiro", "2026-11-01")
+    caixa = services.resumo_caixa()
+    assert caixa == {"devido": Decimal("175.00"), "recebido": Decimal("100.00"), "pendente": Decimal("75.00")}
+

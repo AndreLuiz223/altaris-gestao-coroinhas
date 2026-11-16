@@ -8,7 +8,7 @@ from escala.models import Funcao, Servidor
 
 pytestmark = pytest.mark.django_db
 
-PROTEGIDAS = ["painel", "servidores", "servidor_novo"]
+PROTEGIDAS = ["painel", "servidores", "tunicas", "servidor_novo", "tunica_nova"]
 
 
 @pytest.mark.parametrize("nome", PROTEGIDAS)
@@ -118,3 +118,14 @@ def test_cadastro_servidor_duplicado_bloqueado(cliente_logado, comunidade, servi
              "status": "ativo", "nome_responsavel": "R"}
     resp = cliente_logado.post(reverse("servidor_novo"), dados)
     assert resp.status_code == 200 and Servidor.objects.filter(nome="Ana B.").count() == 1
+
+
+def test_tunicas_e_pagamento_pela_interface(cliente_logado, tunica):
+    resp = cliente_logado.post(reverse("pagamento_novo", args=[tunica.pk]),
+                               {"valor": "200.00", "forma": "pix", "data_pagamento": "2026-11-01"})
+    assert "ultrapassa o saldo" in resp.content.decode()
+    cliente_logado.post(reverse("pagamento_novo", args=[tunica.pk]),
+                        {"valor": "75.00", "forma": "pix", "data_pagamento": "2026-11-01"})
+    html = cliente_logado.get(reverse("tunicas")).content.decode()
+    assert "Saldo: R$ 100,00" in html or "Saldo: R$ 100.00" in html
+

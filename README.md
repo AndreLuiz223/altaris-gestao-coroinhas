@@ -1,12 +1,76 @@
 # ALTARIS — Gestão de Coroinhas e Cerimoniários
 
-MVP da disciplina Projeto de Software (ADS – Cruzeiro do Sul) para a Pastoral dos Coroinhas e
-Cerimoniários da Paróquia Imaculada Conceição Aparecida (São Bernardo do Campo – SP).
+MVP desenvolvido na disciplina **Projeto de Software** (ADS – Universidade Cruzeiro do Sul) para a
+**Pastoral dos Coroinhas e Cerimoniários da Paróquia Imaculada Conceição Aparecida**
+(Diocese de Santo André, São Bernardo do Campo – SP).
 
-Em desenvolvimento: estrutura inicial do projeto Django, modelos de dados e pipeline de CI.
+## Problema
+
+A coordenação voluntária monta à mão, toda semana, a escala de cerca de 120 servidores do altar em
+cinco comunidades (≈ 5 h/semana), com conflitos (o mesmo jovem em várias funções), sobrecarga de
+poucos servidores e controle de túnicas sem transparência.
+
+## O que o MVP faz
+
+| Requisito | Funcionalidade |
+|---|---|
+| RF01 | Cadastro de servidores por comunidade, função, nível (experiente/em formação) e status |
+| RF02 | Montagem da escala com lista sugerida **ordenada por quem serviu menos no mês** |
+| RF03 | **Bloqueio de conflitos**: mesmo servidor em duas funções ou em horários sobrepostos |
+| RF04 | Publicação da escala por **link público** (token aleatório, sem dados de contato) para o WhatsApp |
+| RF05 | Túnicas e pagamentos com saldo calculado e fechamento de caixa conferível |
+
+Alinhado ao **ODS 16 – Paz, Justiça e Instituições Eficazes** (metas 16.6 e 16.7).
+
+## Tecnologias
+
+Python 3.12 · Django 5.2 LTS (arquitetura MVT em camadas, com `services.py` para regras de negócio) ·
+PostgreSQL 16 (SQLite no desenvolvimento) · Bootstrap 5 · Argon2 · pytest/pytest-django/pytest-cov ·
+GitHub Actions (CI).
+
+```
+config/            configurações (variáveis de ambiente, segurança)
+escala/models.py   entidades: Comunidade, Servidor, Celebracao, Atribuicao, Tunica, PagamentoTunica
+escala/services.py regras de negócio (sugestão, conflitos, publicação, pagamentos)
+escala/views.py    controle das requisições
+escala/templates/  telas (mobile first, acessíveis)
+escala/tests/      testes unitários e de integração
+.github/workflows/ pipeline de integração contínua
+```
+
+## Como executar localmente
 
 ```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 python manage.py migrate
-pytest
+python manage.py dados_demo --senha "uma-senha-forte"   # dados fictícios + usuário 'coordenacao'
+python manage.py runserver
 ```
+
+Acesse http://127.0.0.1:8000 e entre com o usuário `coordenacao`.
+
+## Testes
+
+```bash
+pytest            # testes unitários + integração com relatório de cobertura
+```
+
+O pipeline de CI executa, a cada push e Pull Request: verificação de migrações, `check --deploy`,
+`collectstatic` (build) e a suíte de testes no PostgreSQL, exigindo cobertura mínima de 85%.
+
+## Segurança e acessibilidade
+
+- Senhas com hash **Argon2id**; login obrigatório em todas as telas da coordenação; sessão com expiração.
+- ORM com consultas parametrizadas, escape automático de HTML, CSRF, CSP e `X-Frame-Options: DENY`.
+- Segredos somente em variáveis de ambiente (`.env.example`).
+- Botões ≥ 44 px, alto contraste, alertas com **texto + símbolo + cor** e `role="alert"`.
+
+## Implantação
+
+Configuração pronta para o Render (`render.yaml`) com Gunicorn e WhiteNoise.
+Variáveis necessárias: `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`.
+
+---
+Autor: André Luiz — Análise e Desenvolvimento de Sistemas.
+Todos os nomes de servidores nos dados de demonstração são fictícios.

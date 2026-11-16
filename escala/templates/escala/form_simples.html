@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="cartao"><h2 class="h5">{{ titulo }}</h2>
+<form method="post" novalidate>{% csrf_token %}{{ form.non_field_errors }}
+{% for f in form %}<div class="mb-3"><label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}</label>{{ f }}{{ f.errors }}</div>{% endfor %}
+<button class="btn-alt btn-prim" type="submit">Salvar</button></form></div>
+{% endblock %}
