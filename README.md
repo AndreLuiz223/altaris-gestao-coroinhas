@@ -86,3 +86,10 @@ Capturas geradas com dados fictícios (`dados_demo`), em tela de celular:
 | ![Atribuição](docs/evidencias/05_atribuicao_ok.png) | ![Alerta de conflito](docs/evidencias/06_alerta_conflito.png) |
 | ![Escala publicada](docs/evidencias/07_escala_publicada.png) | ![Escala pública](docs/evidencias/08_escala_publica.png) |
 | ![Túnicas](docs/evidencias/09_tunicas.png) | ![Servidores](docs/evidencias/10_servidores.png) |
+| ![Letra maior e alto contraste](docs/evidencias/11_acessibilidade_contraste_fonte.png) | ![Montagem em alto contraste](docs/evidencias/12_montar_alto_contraste.png) |
+
+## Acessibilidade
+
+- Botões **Letra maior** (125%) e **Alto contraste** (preto/amarelo) em todas as páginas, inclusive na escala pública enviada às famílias; a escolha fica salva no aparelho e o estado é anunciado a leitores de tela (`aria-pressed`).
+- Atalho **Pular para o conteúdo**, foco visível em amarelo, alvos de toque com no mínimo 44 px.
+- Alertas com ícone + texto (não dependem só da cor) e `role="alert"`.

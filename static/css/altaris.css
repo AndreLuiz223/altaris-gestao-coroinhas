@@ -1,6 +1,6 @@
 /* ALTARIS – estilos mobile first com foco em acessibilidade (RNF04) */
 :root{--azul:#0B3D91;--texto:#1B1B1B;--fundo:#F4F6FA;--verde:#1E7B3C;--vermelho:#B42318;--amarelo:#B7791F}
-body{font-size:16px;color:var(--texto);background:var(--fundo);padding-bottom:84px}
+body{font-size:1rem;color:var(--texto);background:var(--fundo);padding-bottom:84px}
 a{color:var(--azul)}
 :focus-visible{outline:3px solid #F5B400!important;outline-offset:2px}
 .topo{background:var(--azul);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -55,3 +55,26 @@ label{font-weight:600}
 .barra-prog::-webkit-progress-bar{background:#E3E7EE;border-radius:5px}
 .barra-prog::-webkit-progress-value{background:var(--azul);border-radius:5px}
 .barra-prog::-moz-progress-bar{background:var(--azul)}
+
+/* Acessibilidade: atalho, letra maior e alto contraste (RNF04 / ODS 16.7) */
+.pular{position:absolute;left:-999px;top:0;background:#000;color:#fff;padding:10px 14px;z-index:100;font-weight:700}
+.pular:focus{left:8px;top:8px}
+.barra-a11y{display:flex;justify-content:flex-end;gap:8px;background:#E8EEF9;padding:6px 12px}
+.btn-a11y{min-height:44px;min-width:44px;border:2px solid var(--azul);border-radius:8px;background:#fff;color:var(--azul);font-weight:700;padding:6px 10px}
+.btn-a11y[aria-pressed=true]{background:var(--azul);color:#fff}
+html.fonte-grande{font-size:125%}
+html.fonte-grande .form-control,html.fonte-grande .form-select{font-size:1.25rem}
+html.alto-contraste body{background:#000;color:#fff}
+html.alto-contraste .topo,html.alto-contraste .barra-a11y,html.alto-contraste .menu{background:#000;border-color:#fff;border-bottom:2px solid #fff}
+html.alto-contraste .cartao,html.alto-contraste .funcao,html.alto-contraste .opcao,html.alto-contraste .link-box,html.alto-contraste .escolher{background:#000;color:#fff;border:2px solid #fff;box-shadow:none}
+html.alto-contraste a,html.alto-contraste .escolher,html.alto-contraste .menu a,html.alto-contraste .menu a.ativo{color:#FFE600}
+html.alto-contraste .meta,html.alto-contraste .funcao .rot,html.alto-contraste .opcao small,html.alto-contraste .text-secondary{color:#fff!important}
+html.alto-contraste .btn-a11y{background:#000;color:#FFE600;border-color:#FFE600}
+html.alto-contraste .btn-a11y[aria-pressed=true]{background:#FFE600;color:#000}
+html.alto-contraste .btn-prim,html.alto-contraste .btn-wa{background:#FFE600;color:#000;border-color:#FFE600}
+html.alto-contraste .btn-sec,html.alto-contraste .link-box input{background:#000;color:#FFE600;border-color:#FFE600}
+html.alto-contraste .alerta{background:#000;color:#fff;border-color:#FFE600}
+html.alto-contraste .tag,html.alto-contraste .selo{background:#000;color:#fff;border-color:#fff}
+html.alto-contraste .barra-prog::-webkit-progress-value{background:#FFE600}
+html.alto-contraste .barra-prog::-moz-progress-bar{background:#FFE600}
+html.alto-contraste .tabela-publica div{border-color:#fff}

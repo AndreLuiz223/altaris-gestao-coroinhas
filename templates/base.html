@@ -6,15 +6,21 @@
 <title>{% block title %}ALTARIS{% endblock %}</title>
 <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
 <link rel="stylesheet" href="{% static 'css/altaris.css' %}">
+<script src="{% static 'js/acessibilidade.js' %}" defer></script>
 </head>
 <body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<div class="barra-a11y no-print" role="toolbar" aria-label="Acessibilidade">
+  <button type="button" class="btn-a11y" data-a11y="fonte" aria-pressed="false"><span aria-hidden="true">A+</span> Letra maior</button>
+  <button type="button" class="btn-a11y" data-a11y="contraste" aria-pressed="false">Alto contraste</button>
+</div>
 <header class="topo">
   <div>{% block topo %}<h1>✝ ALTARIS</h1>{% if user.is_authenticated %}<div class="sub">Olá, {{ user.first_name|default:user.username }}</div>{% endif %}{% endblock %}</div>
   {% if user.is_authenticated %}
   <form method="post" action="{% url 'logout' %}" class="m-0">{% csrf_token %}<button class="btn-topo" type="submit">Sair</button></form>
   {% endif %}
 </header>
-<main class="conteudo">
+<main class="conteudo" id="conteudo" tabindex="-1">
   {% for m in messages %}
     <div class="alerta {% if m.tags == 'error' %}alerta-erro{% elif m.tags == 'success' %}alerta-ok{% elif m.tags == 'warning' %}alerta-aviso{% else %}alerta-info{% endif %}" role="alert">
       <span class="ic" aria-hidden="true">{% if m.tags == 'error' %}✕{% elif m.tags == 'success' %}✔{% elif m.tags == 'warning' %}!{% else %}i{% endif %}</span>

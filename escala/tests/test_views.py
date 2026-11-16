@@ -129,3 +129,17 @@ def test_tunicas_e_pagamento_pela_interface(cliente_logado, tunica):
     html = cliente_logado.get(reverse("tunicas")).content.decode()
     assert "Saldo: R$ 100,00" in html or "Saldo: R$ 100.00" in html
 
+
+
+@pytest.mark.django_db
+def test_recursos_de_acessibilidade_presentes_inclusive_na_escala_publica(client, celebracao):
+    """Letra maior, alto contraste e atalho para o conteúdo em todas as páginas."""
+    from escala import services
+    services.publicar(celebracao)
+    for resp in (client.get(reverse("login")),
+                 client.get(reverse("escala_publica", args=[celebracao.token_publico]))):
+        html = resp.content.decode()
+        assert 'data-a11y="fonte"' in html and 'data-a11y="contraste"' in html
+        assert 'aria-pressed="false"' in html
+        assert 'href="#conteudo"' in html and 'id="conteudo"' in html
+        assert "js/acessibilidade.js" in html
