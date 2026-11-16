@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
-ADMIN_URL = os.environ.get("ADMIN_URL", "gestao-altaris/")
+ADMIN_URL = os.environ.get("ADMIN_URL", "gestao-altaris").strip("/") + "/"
 
 urlpatterns = [
     path(ADMIN_URL, admin.site.urls),

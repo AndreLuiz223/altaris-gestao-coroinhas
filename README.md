@@ -68,8 +68,20 @@ O pipeline de CI executa, a cada push e Pull Request: verificação de migraçõ
 
 ## Implantação
 
-Configuração pronta para o Render (`render.yaml`) com Gunicorn e WhiteNoise.
-Variáveis necessárias: `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`.
+Deploy por Blueprint no Render (`render.yaml`): web service Python (Gunicorn + WhiteNoise) e
+PostgreSQL gerenciado, com deploy automático a cada merge na `main`.
+
+- `SECRET_KEY` e o caminho do admin (`ADMIN_URL`) são gerados pelo Render; `DATABASE_URL` vem do banco.
+- O domínio público (`RENDER_EXTERNAL_HOSTNAME`) é liberado automaticamente em `ALLOWED_HOSTS`/CSRF.
+- `preparar_producao` (idempotente) cria as 5 comunidades e o usuário `coordenacao` com a senha
+  definida em `ALTARIS_SENHA` no painel do Render; nenhuma senha fica no repositório.
+
+### Monitoramento pós-lançamento
+
+- **Health check** `GET /saude/` → `{"status":"ok","banco":"ok","latencia_ms":…,"versao":…}` (200) ou 503
+  se o banco cair. Usado pelo Render (`healthCheckPath`) e por monitor externo de disponibilidade.
+- **Logs** em stdout (acessos do Gunicorn, erros `django.request` e alertas `django.security`) na aba *Logs*.
+- **Métricas** de CPU, memória e requisições na aba *Metrics* do Render; e-mail de falha de deploy.
 
 ---
 Autor: André Luiz — Análise e Desenvolvimento de Sistemas.
