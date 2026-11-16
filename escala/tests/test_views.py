@@ -34,6 +34,22 @@ def test_logout_encerra_sessao(cliente_logado):
     assert cliente_logado.get(reverse("painel")).status_code == 302
 
 
+def test_alerta_de_conflito_na_interface(cliente_logado, celebracao, servidores):
+    url = reverse("atribuir", args=[celebracao.pk])
+    cliente_logado.post(url, {"funcao": Funcao.CRUZ, "servidor": servidores["lucas"].pk})
+    resp = cliente_logado.post(url, {"funcao": Funcao.TURIBULO, "servidor": servidores["lucas"].pk}, follow=True)
+    html = resp.content.decode()
+    assert 'role="alert"' in html and "Lucas F. já está em Cruz nesta missa" in html
+    assert "✕" in html  # alerta com símbolo, não só cor (RNF04)
+
+
+def test_post_sem_csrf_e_recusado(usuario, celebracao, servidores):
+    c = Client(enforce_csrf_checks=True)
+    c.force_login(usuario)
+    resp = c.post(reverse("atribuir", args=[celebracao.pk]), {"funcao": "cruz", "servidor": servidores["ana"].pk})
+    assert resp.status_code == 403
+
+
 def test_xss_no_nome_e_escapado(cliente_logado, comunidade):
     Servidor.objects.create(comunidade=comunidade, nome="<script>alert(1)</script>", nome_responsavel="R")
     html = cliente_logado.get(reverse("servidores")).content.decode()
