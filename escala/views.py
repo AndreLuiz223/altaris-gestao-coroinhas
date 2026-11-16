@@ -1,10 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
+from urllib.parse import urlencode
 
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
+from . import services
 from .forms import ServidorForm
-from .models import Celebracao, Servidor
+from .models import Celebracao, Funcao, Servidor
 
 
 @login_required
@@ -14,6 +19,54 @@ def painel(request):
     celebracoes = (Celebracao.objects.filter(data_hora_inicio__gte=agora)
                    .select_related("comunidade").prefetch_related("atribuicoes")[:20])
     return render(request, "escala/painel.html", {"celebracoes": celebracoes})
+
+
+@login_required
+def montar_escala(request, pk):
+    """Tela 2 – funções da celebração; com ?funcao= mostra a lista sugerida (RF02)."""
+    celebracao = get_object_or_404(Celebracao.objects.select_related("comunidade"), pk=pk)
+    funcao = request.GET.get("funcao")
+    sugestoes = None
+    funcao_label = None
+    if funcao in Funcao.values:
+        sugestoes = services.sugerir_servidores(celebracao, funcao)
+        funcao_label = Funcao(funcao).label
+    return render(request, "escala/montar.html", {
+        "celebracao": celebracao,
+        "linhas": services.linhas_da_escala(celebracao),
+        "avisos": services.avisos_da_escala(celebracao),
+        "funcao": funcao if funcao_label else None,
+        "funcao_label": funcao_label,
+        "sugestoes": sugestoes,
+    })
+
+
+@login_required
+@require_POST
+def atribuir(request, pk):
+    """RF03 – grava a atribuição ou mostra o alerta de conflito."""
+    celebracao = get_object_or_404(Celebracao, pk=pk)
+    funcao = request.POST.get("funcao", "")
+    servidor = get_object_or_404(Servidor, pk=request.POST.get("servidor"))
+    try:
+        services.atribuir(celebracao, funcao, servidor, request.user)
+        messages.success(request, f"{servidor.nome} escalado(a) em {Funcao(funcao).label}.")
+    except services.RegraEscalaError as erro:
+        messages.error(request, str(erro))
+        url = reverse("montar_escala", args=[pk])
+        if funcao in Funcao.values:
+            url += "?" + urlencode({"funcao": funcao})
+        return redirect(url)
+    return redirect("montar_escala", pk=pk)
+
+
+@login_required
+@require_POST
+def remover(request, pk):
+    celebracao = get_object_or_404(Celebracao, pk=pk)
+    services.remover_atribuicao(celebracao, request.POST.get("funcao", ""))
+    messages.info(request, "Função liberada.")
+    return redirect("montar_escala", pk=pk)
 
 
 @login_required

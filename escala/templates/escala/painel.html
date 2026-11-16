@@ -8,6 +8,7 @@
     <div class="meta">{{ c.comunidade }} • {{ c.get_tipo_display }}</div>
           <div class="status">⏱ {{ p }} de {{ t }} funções preenchidas</div>
       <progress class="barra-prog" value="{{ p }}" max="{{ t }}" aria-label="Funções preenchidas">{{ p }} de {{ t }}</progress>
+      <a class="btn-alt btn-prim" href="{% url 'montar_escala' c.pk %}">✎ Montar escala</a>
   </article>
   {% endwith %}
 {% empty %}
