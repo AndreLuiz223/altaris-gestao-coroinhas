@@ -74,3 +74,15 @@ Variáveis necessárias: `SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, `CSRF_TR
 ---
 Autor: André Luiz — Análise e Desenvolvimento de Sistemas.
 Todos os nomes de servidores nos dados de demonstração são fictícios.
+
+## Evidências de funcionamento
+
+Capturas geradas com dados fictícios (`dados_demo`), em tela de celular:
+
+| | |
+|---|---|
+| ![Login](docs/evidencias/01_login.png) | ![Painel](docs/evidencias/02_painel.png) |
+| ![Montar escala](docs/evidencias/03_montar_escala.png) | ![Lista sugerida](docs/evidencias/04_lista_sugerida.png) |
+| ![Atribuição](docs/evidencias/05_atribuicao_ok.png) | ![Alerta de conflito](docs/evidencias/06_alerta_conflito.png) |
+| ![Escala publicada](docs/evidencias/07_escala_publicada.png) | ![Escala pública](docs/evidencias/08_escala_publica.png) |
+| ![Túnicas](docs/evidencias/09_tunicas.png) | ![Servidores](docs/evidencias/10_servidores.png) |
