@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Escala {{ celebracao.comunidade }} – ALTARIS{% endblock %}
+{% block topo %}<h1 class="titulo-menor">Escala de servidores do altar</h1><div class="sub">{{ celebracao.titulo }}</div>{% endblock %}
+{% block content %}
+<div class="cartao">
+  <div class="quando">{{ celebracao.data_hora_inicio|date:"l, d/m/Y • H\hi" }}</div>
+  <div class="meta">{{ celebracao.comunidade }}</div>
+</div>
+<div class="cartao tabela-publica" aria-label="Funções e servidores">
+{% for valor, rotulo, a in linhas %}<div><span>{{ rotulo }}</span><strong>{% if a %}{{ a.servidor.nome }}{% else %}—{% endif %}</strong></div>{% endfor %}
+</div>
+<p class="meta no-print">Dica: use "Imprimir" ou "Salvar como PDF" no navegador para guardar a escala.</p>
+{% endblock %}

@@ -70,6 +70,38 @@ def remover(request, pk):
 
 
 @login_required
+@require_POST
+def publicar(request, pk):
+    """RF04 – publica e mostra o link para o WhatsApp (Tela 3)."""
+    celebracao = get_object_or_404(Celebracao, pk=pk)
+    services.publicar(celebracao)
+    messages.success(request, "Escala publicada! Envie o link para os servidores.")
+    return redirect("resultado_escala", pk=pk)
+
+
+@login_required
+def resultado_escala(request, pk):
+    celebracao = get_object_or_404(Celebracao.objects.select_related("comunidade"), pk=pk)
+    link = request.build_absolute_uri(f"/e/{celebracao.token_publico}/") if celebracao.token_publico else None
+    return render(request, "escala/resultado.html", {
+        "celebracao": celebracao,
+        "linhas": services.linhas_da_escala(celebracao),
+        "avisos": services.avisos_da_escala(celebracao),
+        "link": link,
+    })
+
+
+def escala_publica(request, token):
+    """Página pública somente leitura – sem dados de contato (RNF02)."""
+    celebracao = get_object_or_404(Celebracao.objects.select_related("comunidade"),
+                                   token_publico=token, publicada=True)
+    return render(request, "escala/publica.html", {
+        "celebracao": celebracao,
+        "linhas": services.linhas_da_escala(celebracao),
+    })
+
+
+@login_required
 def servidores(request):
     lista = Servidor.objects.select_related("comunidade").exclude(status=Servidor.Status.DESLIGADO)
     return render(request, "escala/servidores.html", {"servidores": lista})

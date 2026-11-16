@@ -116,3 +116,9 @@ def linhas_da_escala(celebracao):
     """Lista de (funcao, label, atribuicao|None) na ordem padrão das funções."""
     por_funcao = {a.funcao: a for a in celebracao.atribuicoes.select_related("servidor")}
     return [(f.value, f.label, por_funcao.get(f.value)) for f in FUNCOES_PADRAO]
+
+
+def publicar(celebracao):
+    """RF04: publica a escala e garante o token público aleatório."""
+    celebracao.publicar()
+    return celebracao.token_publico
