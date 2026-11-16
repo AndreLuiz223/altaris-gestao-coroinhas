@@ -122,3 +122,54 @@ def test_resumo_caixa_confere_centavo_a_centavo(tunica):
     caixa = services.resumo_caixa()
     assert caixa == {"devido": Decimal("175.00"), "recebido": Decimal("100.00"), "pendente": Decimal("75.00")}
 
+
+
+# ---------- Ajuste da validação 1: reaproveitar escala anterior ----------
+
+def _anterior(celebracao, dias=7):
+    from datetime import timedelta
+    return Celebracao.objects.create(comunidade=celebracao.comunidade, titulo="Missa dominical",
+                                     data_hora_inicio=celebracao.data_hora_inicio - timedelta(days=dias))
+
+
+def test_escala_anterior_prefere_mesmo_dia_e_horario(celebracao, servidores):
+    semana_passada = _anterior(celebracao, 7)
+    ontem = _anterior(celebracao, 1)
+    services.atribuir(semana_passada, Funcao.CRUZ, servidores["ana"])
+    services.atribuir(ontem, Funcao.CRUZ, servidores["pedro"])
+    assert services.escala_anterior(celebracao) == semana_passada
+
+
+def test_escala_anterior_ignora_celebracao_vazia(celebracao):
+    _anterior(celebracao, 7)
+    assert services.escala_anterior(celebracao) is None
+
+
+def test_copiar_escala_preenche_so_funcoes_vazias(celebracao, servidores):
+    origem = _anterior(celebracao)
+    services.atribuir(origem, Funcao.CRUZ, servidores["ana"])
+    services.atribuir(origem, Funcao.TURIBULO, servidores["lucas"])
+    services.atribuir(celebracao, Funcao.CRUZ, servidores["pedro"])  # já definida: mantém
+    copiadas, avisos = services.copiar_escala(celebracao, origem)
+    escala = {a.funcao: a.servidor for a in celebracao.atribuicoes.all()}
+    assert copiadas == 1 and avisos == []
+    assert escala[Funcao.CRUZ] == servidores["pedro"] and escala[Funcao.TURIBULO] == servidores["lucas"]
+
+
+def test_copiar_escala_respeita_regras(celebracao, servidores):
+    origem = _anterior(celebracao)
+    services.atribuir(origem, Funcao.CRUZ, servidores["ana"])
+    services.atribuir(origem, Funcao.NAVETA, servidores["marina"])
+    servidores["marina"].status = Servidor.Status.AFASTADO
+    servidores["marina"].save()
+    services.atribuir(celebracao, Funcao.TURIBULO, servidores["ana"])  # Ana já está nesta missa
+    copiadas, avisos = services.copiar_escala(celebracao, origem)
+    assert copiadas == 0 and len(avisos) == 2
+    assert any("Ana B." in a for a in avisos) and any("Marina S." in a for a in avisos)
+
+
+def test_copiar_escala_de_outra_comunidade_e_bloqueado(celebracao, outra_comunidade):
+    origem = Celebracao.objects.create(comunidade=outra_comunidade, titulo="Missa",
+                                       data_hora_inicio=celebracao.data_hora_inicio)
+    with pytest.raises(services.RegraEscalaError):
+        services.copiar_escala(celebracao, origem)

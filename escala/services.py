@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q, Sum
+from django.utils import timezone
 
 from .models import Atribuicao, Celebracao, FUNCOES_PADRAO, Funcao, PagamentoTunica, Servidor, Tunica
 
@@ -110,6 +111,47 @@ def avisos_da_escala(celebracao):
     if faltando > 0:
         avisos.append(f"Ainda faltam {faltando} função(ões) sem servidor.")
     return avisos
+
+
+def escala_anterior(celebracao):
+    """Última celebração da mesma comunidade, antes desta, que já tem servidores escalados.
+
+    Dá preferência a uma do mesmo dia da semana e horário (ex.: domingo 9h → domingo 9h).
+    """
+    anteriores = (
+        Celebracao.objects.filter(comunidade=celebracao.comunidade,
+                                  data_hora_inicio__lt=celebracao.data_hora_inicio)
+        .annotate(n=Count("atribuicoes")).filter(n__gt=0)
+        .order_by("-data_hora_inicio")
+    )
+    inicio = timezone.localtime(celebracao.data_hora_inicio)
+    lista = list(anteriores[:20])
+    for c in lista:
+        quando = timezone.localtime(c.data_hora_inicio)
+        if quando.weekday() == inicio.weekday() and quando.time() == inicio.time():
+            return c
+    return lista[0] if lista else None
+
+
+def copiar_escala(destino, origem, usuario=None):
+    """Ajuste da validação 1: reaproveita a escala de uma celebração anterior.
+
+    Copia só as funções ainda vazias e reaplica TODAS as regras de atribuir() (servidor ativo,
+    mesma comunidade, sem conflito de horário). Devolve (copiadas, avisos dos que ficaram de fora).
+    """
+    if origem.comunidade_id != destino.comunidade_id:
+        raise RegraEscalaError("Só é possível copiar escalas da mesma comunidade.")
+    preenchidas = set(destino.atribuicoes.values_list("funcao", flat=True))
+    copiadas, avisos = 0, []
+    for a in origem.atribuicoes.select_related("servidor").order_by("funcao"):
+        if a.funcao in preenchidas:
+            continue
+        try:
+            atribuir(destino, a.funcao, a.servidor, usuario)
+            copiadas += 1
+        except RegraEscalaError as erro:
+            avisos.append(f"{a.get_funcao_display()}: {erro}")
+    return copiadas, avisos
 
 
 def linhas_da_escala(celebracao):
