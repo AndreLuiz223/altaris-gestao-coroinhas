@@ -36,4 +36,7 @@
 </div>
 {% endfor %}
 
+<form method="post" action="{% url 'publicar' celebracao.pk %}" class="mt-3">{% csrf_token %}
+  <button class="btn-alt btn-prim" type="submit">✔ Publicar escala</button>
+</form>
 {% endblock %}
