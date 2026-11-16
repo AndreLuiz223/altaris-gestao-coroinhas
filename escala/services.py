@@ -122,3 +122,27 @@ def publicar(celebracao):
     """RF04: publica a escala e garante o token público aleatório."""
     celebracao.publicar()
     return celebracao.token_publico
+
+
+# ---------- RF05: túnicas e pagamentos ----------
+
+def registrar_pagamento(tunica, valor, forma, data_pagamento, usuario=None, permitir_credito=False):
+    valor = Decimal(valor)
+    if valor <= 0:
+        raise RegraEscalaError("O valor do pagamento deve ser maior que zero.")
+    if not permitir_credito and tunica.total_pago + valor > tunica.valor_total:
+        raise RegraEscalaError(
+            f"O pagamento ultrapassa o saldo da túnica (saldo atual: R$ {tunica.saldo:.2f})."
+        )
+    parcela = tunica.pagamentos.count() + 1
+    return PagamentoTunica.objects.create(
+        tunica=tunica, valor=valor, forma=forma, data_pagamento=data_pagamento,
+        parcela=parcela, registrado_por=usuario,
+    )
+
+
+def resumo_caixa():
+    """Total devido, recebido e pendente de todas as túnicas (fechamento conferível)."""
+    devido = Tunica.objects.aggregate(t=Sum("valor_total"))["t"] or Decimal("0.00")
+    recebido = PagamentoTunica.objects.aggregate(t=Sum("valor"))["t"] or Decimal("0.00")
+    return {"devido": devido, "recebido": recebido, "pendente": devido - recebido}

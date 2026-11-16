@@ -13,4 +13,7 @@ urlpatterns = [
     path("servidores/", views.servidores, name="servidores"),
     path("servidores/novo/", views.servidor_form, name="servidor_novo"),
     path("servidores/<int:pk>/", views.servidor_form, name="servidor_editar"),
+    path("tunicas/", views.tunicas, name="tunicas"),
+    path("tunicas/nova/", views.tunica_nova, name="tunica_nova"),
+    path("tunicas/<int:pk>/pagamento/", views.pagamento_novo, name="pagamento_novo"),
 ]

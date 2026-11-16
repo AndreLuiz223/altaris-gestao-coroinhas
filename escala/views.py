@@ -8,8 +8,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from . import services
-from .forms import ServidorForm
-from .models import Celebracao, Funcao, Servidor
+from .forms import PagamentoForm, ServidorForm, TunicaForm
+from .models import Celebracao, Funcao, Servidor, Tunica
 
 
 @login_required
@@ -101,6 +101,8 @@ def escala_publica(request, token):
     })
 
 
+# ---------- RF01: servidores ----------
+
 @login_required
 def servidores(request):
     lista = Servidor.objects.select_related("comunidade").exclude(status=Servidor.Status.DESLIGADO)
@@ -116,3 +118,37 @@ def servidor_form(request, pk=None):
         messages.success(request, "Servidor salvo.")
         return redirect("servidores")
     return render(request, "escala/servidor_form.html", {"form": form, "instancia": instancia})
+
+
+# ---------- RF05: túnicas ----------
+
+@login_required
+def tunicas(request):
+    lista = Tunica.objects.select_related("servidor").prefetch_related("pagamentos")
+    return render(request, "escala/tunicas.html", {"tunicas": lista, "caixa": services.resumo_caixa()})
+
+
+@login_required
+def tunica_nova(request):
+    form = TunicaForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Túnica registrada.")
+        return redirect("tunicas")
+    return render(request, "escala/form_simples.html", {"form": form, "titulo": "Nova túnica"})
+
+
+@login_required
+def pagamento_novo(request, pk):
+    tunica = get_object_or_404(Tunica, pk=pk)
+    form = PagamentoForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            services.registrar_pagamento(tunica, form.cleaned_data["valor"], form.cleaned_data["forma"],
+                                         form.cleaned_data["data_pagamento"], request.user)
+            messages.success(request, "Pagamento registrado.")
+            return redirect("tunicas")
+        except services.RegraEscalaError as erro:
+            form.add_error("valor", str(erro))
+    return render(request, "escala/form_simples.html",
+                  {"form": form, "titulo": f"Pagamento – {tunica}"})

@@ -28,6 +28,7 @@
   {% with u=request.resolver_match.url_name %}
   <a href="{% url 'painel' %}" class="{% if u == 'painel' %}ativo{% endif %}"><span class="ic" aria-hidden="true">⌂</span>Início</a>
   <a href="{% url 'servidores' %}" class="{% if u == 'servidores' or u == 'servidor_novo' or u == 'servidor_editar' %}ativo{% endif %}"><span class="ic" aria-hidden="true">☺</span>Servidores</a>
+  <a href="{% url 'tunicas' %}" class="{% if u == 'tunicas' %}ativo{% endif %}"><span class="ic" aria-hidden="true">◈</span>Túnicas</a>
   {% endwith %}
 </nav>
 {% endif %}
