@@ -81,6 +81,9 @@ PostgreSQL gerenciado, com deploy automático a cada merge na `main`.
 - **Health check** `GET /saude/` → `{"status":"ok","banco":"ok","latencia_ms":…,"versao":…}` (200) ou 503
   se o banco cair. Usado pelo Render (`healthCheckPath`) e por monitor externo de disponibilidade.
 - **Logs** em stdout (acessos do Gunicorn, erros `django.request` e alertas `django.security`) na aba *Logs*.
+- **Monitor externo** (`.github/workflows/monitor.yml`): GitHub Actions consulta `/saude/` e a página de
+  login a cada 30 min; se cair, o run fica vermelho (DOWN) e o GitHub envia e-mail de falha.
+- Produção: https://altaris-2vu6.onrender.com
 - **Métricas** de CPU, memória e requisições na aba *Metrics* do Render; e-mail de falha de deploy.
 
 ---
