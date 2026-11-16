@@ -1,0 +1,57 @@
+/* ALTARIS – estilos mobile first com foco em acessibilidade (RNF04) */
+:root{--azul:#0B3D91;--texto:#1B1B1B;--fundo:#F4F6FA;--verde:#1E7B3C;--vermelho:#B42318;--amarelo:#B7791F}
+body{font-size:16px;color:var(--texto);background:var(--fundo);padding-bottom:84px}
+a{color:var(--azul)}
+:focus-visible{outline:3px solid #F5B400!important;outline-offset:2px}
+.topo{background:var(--azul);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.topo h1{font-size:1.25rem;margin:0;letter-spacing:1px}
+.topo .sub{font-size:.9rem}
+.btn-topo{border:2px solid #fff;color:#fff;border-radius:8px;padding:8px 12px;min-height:44px;min-width:44px;background:transparent;font-weight:600;text-decoration:none;display:inline-flex;align-items:center}
+.btn-topo:hover{color:#fff;background:rgba(255,255,255,.12)}
+.conteudo{max-width:640px;margin:0 auto;padding:14px 16px}
+.cartao{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.quando{font-size:1.06rem;font-weight:700}
+.meta{color:#3A3A3A;font-size:.95rem}
+.status{font-weight:600;margin:10px 0 6px}
+.barra{height:8px;background:#E3E7EE;border-radius:4px;overflow:hidden;margin-bottom:12px}
+.barra i{display:block;height:100%;background:var(--azul)}
+.btn-alt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border-radius:10px;font-weight:700;border:2px solid var(--azul);text-decoration:none}
+.btn-prim{background:var(--azul);color:#fff}
+.btn-prim:hover{color:#fff;background:#082c69}
+.btn-sec{background:#fff;color:var(--azul)}
+.selo{display:inline-flex;gap:6px;background:#E6F4EA;color:#14532D;border:2px solid var(--verde);border-radius:20px;padding:2px 10px;font-weight:700;font-size:.9rem}
+.funcao{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;min-height:56px;padding:8px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.funcao .rot{font-size:.8rem;color:#555;text-transform:uppercase;letter-spacing:.5px}
+.funcao .nome{font-weight:700}
+.escolher{color:var(--azul);font-weight:700;border:2px dashed var(--azul);border-radius:8px;padding:8px 12px;min-height:44px;display:inline-flex;align-items:center;text-decoration:none;background:#fff}
+.opcao{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;border:0;border-bottom:1px solid #E3E7EE;background:#fff;padding:6px 4px;text-align:left}
+.opcao small{display:block;color:#3A3A3A}
+.tag{font-size:.8rem;font-weight:700;border-radius:14px;padding:3px 8px;border:2px solid;white-space:nowrap}
+.tag-exp{color:#7A4B00;border-color:var(--amarelo);background:#FFF7E6}
+.tag-form{color:#14532D;border-color:var(--verde);background:#E6F4EA}
+.alerta{display:flex;gap:10px;border-radius:10px;padding:12px;margin-bottom:12px;border:2px solid}
+.alerta .ic{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+.alerta-erro{background:#FDECEC;border-color:var(--vermelho);color:#5C0F0A}.alerta-erro .ic{background:var(--vermelho)}
+.alerta-aviso{background:#FFF7E0;border-color:var(--amarelo);color:#4A3200}.alerta-aviso .ic{background:var(--amarelo)}
+.alerta-ok{background:#E6F4EA;border-color:var(--verde);color:#0F3D1F}.alerta-ok .ic{background:var(--verde)}
+.alerta-info{background:#E8EEF9;border-color:var(--azul);color:#0B2A63}.alerta-info .ic{background:var(--azul)}
+.link-box{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid #B9C2D0;border-radius:8px;padding:6px 8px;margin:8px 0}
+.link-box input{border:0;flex:1;min-width:0;font-family:monospace}
+.btn-wa{background:#0F7B3E;border-color:#0F7B3E;color:#fff}
+.btn-wa:hover{color:#fff;background:#0b5f30}
+.menu{position:fixed;bottom:0;left:0;right:0;height:68px;background:#fff;border-top:1px solid #D5DAE3;display:flex;z-index:10}
+.menu a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.8rem;color:#3A3A3A;text-decoration:none;min-height:44px}
+.menu a.ativo{color:var(--azul);font-weight:700}
+.menu .ic{font-size:1.25rem}
+.form-control,.form-select{min-height:44px;font-size:16px}
+label{font-weight:600}
+.errorlist{color:var(--vermelho);font-weight:600;padding-left:0;list-style:none}
+.tabela-publica div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EEF1F5}
+@media print{.menu,.topo .btn-topo,.no-print{display:none!important}body{background:#fff}}
+.titulo-menor{font-size:1.05rem!important}
+.escolher-solido{border-style:solid}
+.flex-1{flex:1;min-width:0}
+.barra-prog{width:100%;height:10px;margin-bottom:12px;appearance:none;border:0;border-radius:5px;background:#E3E7EE;overflow:hidden}
+.barra-prog::-webkit-progress-bar{background:#E3E7EE;border-radius:5px}
+.barra-prog::-webkit-progress-value{background:var(--azul);border-radius:5px}
+.barra-prog::-moz-progress-bar{background:var(--azul)}
