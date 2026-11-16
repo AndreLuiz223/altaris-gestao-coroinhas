@@ -1,18 +1,36 @@
+# Deploy do ALTARIS no Render (Blueprint): web service + PostgreSQL gerenciado.
 services:
   - type: web
     name: altaris
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
-    startCommand: gunicorn config.wsgi:application
+    region: virginia
+    # No plano gratuito não há pre-deploy: migrações e preparo rodam no build (idempotentes).
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput && python manage.py preparar_producao
+    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 60 --access-logfile -
+    healthCheckPath: /saude/
+    autoDeploy: true
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "0"
       - key: DATABASE_URL
+        fromDatabase:
+          name: altaris-db
+          property: connectionString
+      - key: ADMIN_URL
+        generateValue: true
+      - key: ALTARIS_USUARIO
+        value: coordenacao
+      - key: ALTARIS_SENHA
         sync: false
-      - key: ALLOWED_HOSTS
-        sync: false
-      - key: CSRF_TRUSTED_ORIGINS
-        sync: false
+
+databases:
+  - name: altaris-db
+    plan: free
+    region: virginia
+    databaseName: altaris
+    user: altaris
