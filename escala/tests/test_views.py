@@ -34,6 +34,26 @@ def test_logout_encerra_sessao(cliente_logado):
     assert cliente_logado.get(reverse("painel")).status_code == 302
 
 
+def test_fluxo_completo_montar_e_publicar(cliente_logado, celebracao, servidores):
+    # Tela 1 -> Tela 2 -> atribuir -> publicar -> Tela 3 -> página pública
+    painel = cliente_logado.get(reverse("painel"))
+    assert "Montar escala" in painel.content.decode()
+
+    lista = cliente_logado.get(reverse("montar_escala", args=[celebracao.pk]) + "?funcao=turibulo")
+    html = lista.content.decode()
+    assert "Escolher para Turíbulo" in html and "serviu 0x no mês" in html
+
+    resp = cliente_logado.post(reverse("atribuir", args=[celebracao.pk]),
+                               {"funcao": Funcao.TURIBULO, "servidor": servidores["ana"].pk}, follow=True)
+    assert "Ana B. escalado(a) em Turíbulo" in resp.content.decode()
+
+    resp = cliente_logado.post(reverse("publicar", args=[celebracao.pk]), follow=True)
+    assert "Escala publicada!" in resp.content.decode()
+    celebracao.refresh_from_db()
+    publica = Client().get(reverse("escala_publica", args=[celebracao.token_publico]))
+    assert publica.status_code == 200 and "Ana B." in publica.content.decode()
+
+
 def test_alerta_de_conflito_na_interface(cliente_logado, celebracao, servidores):
     url = reverse("atribuir", args=[celebracao.pk])
     cliente_logado.post(url, {"funcao": Funcao.CRUZ, "servidor": servidores["lucas"].pk})
@@ -41,6 +61,26 @@ def test_alerta_de_conflito_na_interface(cliente_logado, celebracao, servidores)
     html = resp.content.decode()
     assert 'role="alert"' in html and "Lucas F. já está em Cruz nesta missa" in html
     assert "✕" in html  # alerta com símbolo, não só cor (RNF04)
+
+
+def test_pagina_publica_sem_dados_de_contato(celebracao, servidores):
+    servidores["ana"].telefone_responsavel = "(11) 91234-5678"
+    servidores["ana"].save()
+    from escala import services
+    services.atribuir(celebracao, Funcao.CRUZ, servidores["ana"])
+    token = services.publicar(celebracao)
+    html = Client().get(reverse("escala_publica", args=[token])).content.decode()
+    assert "Ana B." in html and "91234-5678" not in html and "Responsável" not in html
+
+
+def test_token_invalido_retorna_404(client, celebracao):
+    assert client.get(reverse("escala_publica", args=["token-inexistente"])).status_code == 404
+
+
+def test_escala_nao_publicada_nao_e_publica(client, celebracao):
+    celebracao.token_publico = "abc123"
+    celebracao.save()
+    assert client.get(reverse("escala_publica", args=["abc123"])).status_code == 404
 
 
 def test_post_sem_csrf_e_recusado(usuario, celebracao, servidores):

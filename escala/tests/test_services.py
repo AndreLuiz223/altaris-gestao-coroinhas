@@ -93,3 +93,10 @@ def test_aviso_sem_experiente(celebracao, servidores):
     assert any("experiente" in a for a in avisos)
     services.atribuir(celebracao, Funcao.TURIBULO, servidores["ana"])
     assert not any("experiente" in a for a in services.avisos_da_escala(celebracao))
+
+
+def test_publicar_gera_token_aleatorio(celebracao):
+    token = services.publicar(celebracao)
+    celebracao.refresh_from_db()
+    assert celebracao.publicada and len(token) >= 24
+    assert services.publicar(celebracao) == token  # republicar mantém o mesmo link
